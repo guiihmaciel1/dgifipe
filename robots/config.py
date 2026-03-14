@@ -16,20 +16,22 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 
 CITIES = [
     'São José do Rio Preto',
-    'Mirassol',
-    'Santa Fé do Sul',
+    # 'Mirassol',
+    # 'Santa Fé do Sul',
 ]
 
-CITY_FB_SLUGS = {
-    'São José do Rio Preto': 'sao-jose-do-rio-preto',
-    'Mirassol': 'mirassol',
-    'Santa Fé do Sul': 'santa-fe-do-sul',
+CITY_FB_IDS = {
+    'São José do Rio Preto': '108568625834990',
+    # 'Mirassol': '104072412964498',
+    # 'Santa Fé do Sul': '109792635707383',
 }
 
+FB_RADIUS_KM = 65
+
 CITY_OLX_SLUGS = {
-    'São José do Rio Preto': 'sao-jose-do-rio-preto-e-regiao',
-    'Mirassol': 'sao-jose-do-rio-preto-e-regiao',
-    'Santa Fé do Sul': 'sao-jose-do-rio-preto-e-regiao',
+    'São José do Rio Preto': 'regiao-de-sao-jose-do-rio-preto',
+    # 'Mirassol': 'regiao-de-sao-jose-do-rio-preto',
+    # 'Santa Fé do Sul': 'regiao-de-sao-jose-do-rio-preto',
 }
 
 MODELS = {

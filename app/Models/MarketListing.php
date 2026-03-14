@@ -23,6 +23,13 @@ class MarketListing extends Model
         'collected_at' => 'date',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope('exclude_sealed', function ($query) {
+            $query->where('title', 'NOT REGEXP', '(lacrado|lacrada|selado|selada|sealed|novo na caixa|zero na caixa)');
+        });
+    }
+
     public function scopeForModel($query, string $model, string $storage)
     {
         return $query->where('model', $model)->where('storage', $storage);

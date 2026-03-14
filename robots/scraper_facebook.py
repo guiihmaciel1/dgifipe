@@ -4,7 +4,8 @@ import urllib.parse
 from datetime import date
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout
 from config import (
-    CITY_FB_SLUGS,
+    CITY_FB_IDS,
+    FB_RADIUS_KM,
     SEARCH_KEYWORDS_TEMPLATE,
     MAX_SCROLL_ATTEMPTS,
     REQUEST_DELAY_SECONDS,
@@ -13,16 +14,17 @@ from config import (
 
 def scrape_facebook(page: Page, model: str, storage: str, city: str) -> list[dict]:
     """
-    Scrape Facebook Marketplace for iPhone listings using a shared browser page.
-    Uses city-slug URLs to skip location/login modals entirely.
+    Scrape Facebook Marketplace for iPhone listings.
+    Uses city ID + radius URL format for accurate geolocation.
     """
-    city_slug = CITY_FB_SLUGS.get(city, 'sao-jose-do-rio-preto')
+    city_id = CITY_FB_IDS.get(city, '108568625834990')
     query = SEARCH_KEYWORDS_TEMPLATE.format(model=model, storage=storage)
     encoded_query = urllib.parse.quote(query)
 
     search_url = (
-        f"https://www.facebook.com/marketplace/{city_slug}/search"
+        f"https://www.facebook.com/marketplace/{city_id}/search/"
         f"?query={encoded_query}&exact=false"
+        f"&radius_in_km={FB_RADIUS_KM}&locale=pt_BR"
     )
 
     listings = []
@@ -46,11 +48,7 @@ def scrape_facebook(page: Page, model: str, storage: str, city: str) -> list[dic
 
 
 def _dismiss_login_modal(page: Page) -> None:
-    """
-    Close the Facebook login modal ("Ver mais no Facebook") if it appears.
-    The modal has an X button in the top-right corner. We try multiple
-    strategies since aria-label can be in Portuguese or English.
-    """
+    """Close the Facebook login modal if it appears."""
     close_selectors = [
         '[aria-label="Fechar"]',
         '[aria-label="Close"]',
@@ -88,11 +86,7 @@ def _scroll_to_load(page: Page) -> None:
 
 
 def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[dict]:
-    """
-    Extract listing data from search results.
-    Uses the stable `a[href*="/marketplace/item/"]` selector as anchor,
-    then parses price and title from the link's inner text.
-    """
+    """Extract listing data from search results."""
     listings = []
 
     item_links = page.query_selector_all('a[href*="/marketplace/item/"]')
@@ -151,10 +145,7 @@ def _find_price_in_lines(lines: list[str]) -> float | None:
 
 
 def _find_title_in_lines(lines: list[str]) -> str:
-    """
-    Find the title line — typically the line after the price.
-    Based on screenshots: line order is Price, Title, Location.
-    """
+    """Find the title line — typically the line after the price."""
     for i, line in enumerate(lines):
         if parse_price(line) is not None:
             if i + 1 < len(lines):
@@ -172,28 +163,30 @@ def _find_title_in_lines(lines: list[str]) -> str:
 
 def parse_price(text: str) -> float | None:
     """
-    Parse BRL prices from Facebook Marketplace format.
-    Handles: "R$1.500", "R$ 2.899", "R$3.699 R$4.100", "GRÁTIS"
-    Always returns the first price found.
+    Parse BRL prices from Facebook Marketplace.
+    Handles: "R$5.500", "R$ 2.899", "R$3.699,00", "GRÁTIS"
+    Also handles US$ for servers with American IP.
     """
     text = text.replace('\xa0', ' ').strip()
 
     if 'grátis' in text.lower() or 'gratuito' in text.lower():
         return None
 
-    match = re.search(r'R\$\s*([\d.]+(?:,\d{2})?)', text)
-    if match:
-        price_str = match.group(1)
-        price_str = price_str.replace('.', '').replace(',', '.')
+    brl_match = re.search(r'R\$\s*([\d.]+(?:,\d{2})?)', text)
+    if brl_match:
+        price_str = brl_match.group(1).replace('.', '').replace(',', '.')
         try:
             return float(price_str)
         except ValueError:
             pass
 
-    digits = re.sub(r'[^\d]', '', text)
-    if digits:
-        val = float(digits)
-        if 500 <= val <= 15000:
-            return val
+    usd_match = re.search(r'US\$\s*([\d,]+(?:\.\d{2})?)', text)
+    if usd_match:
+        price_str = usd_match.group(1).replace(',', '')
+        try:
+            usd_val = float(price_str)
+            return round(usd_val * 5.5, 2)
+        except ValueError:
+            pass
 
     return None

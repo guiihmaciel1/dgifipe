@@ -7,14 +7,12 @@ from config import CITY_OLX_SLUGS, SEARCH_KEYWORDS_TEMPLATE, REQUEST_DELAY_SECON
 
 
 def scrape_olx(page: Page, model: str, storage: str, city: str) -> list[dict]:
-    """
-    Scrape OLX for iPhone listings using a shared browser page.
-    """
-    region = CITY_OLX_SLUGS.get(city, 'sao-jose-do-rio-preto-e-regiao')
+    """Scrape OLX for iPhone listings using a shared browser page."""
+    region = CITY_OLX_SLUGS.get(city, 'regiao-de-sao-jose-do-rio-preto')
     query = SEARCH_KEYWORDS_TEMPLATE.format(model=model, storage=storage)
     encoded_query = urllib.parse.quote(query)
 
-    search_url = f"https://www.olx.com.br/celulares/iphone/estado-sp/{region}?q={encoded_query}"
+    search_url = f"https://www.olx.com.br/estado-sp/{region}?q={encoded_query}"
     listings = []
 
     try:
@@ -35,29 +33,31 @@ def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[d
     """Extract listing data from OLX search results."""
     listings = []
 
-    items = page.query_selector_all('[data-ds-component="DS-AdCard"]')
-    if not items:
-        items = page.query_selector_all('a[data-lurker-detail]')
+    # OLX uses section links with parent class 'olx-adcard__topbody'
+    # Find all <a> inside sections that contain price info
+    ad_links = page.query_selector_all('section a')
 
-    for item in items[:50]:
+    seen_urls = set()
+
+    for link in ad_links[:50]:
         try:
-            title_el = item.query_selector('h2') or item.query_selector('[class*="title"]')
-            price_el = item.query_selector('[class*="price"]') or item.query_selector('span')
+            text = link.inner_text().strip()
+            href = link.get_attribute('href') or ''
 
-            if not price_el:
+            if not href or not text or 'R$' not in text:
                 continue
 
-            title = title_el.inner_text().strip() if title_el else ''
-            price_text = price_el.inner_text().strip()
+            if href in seen_urls:
+                continue
+            seen_urls.add(href)
 
-            href = item.get_attribute('href') or ''
-            if not href:
-                link_el = item.query_selector('a')
-                href = link_el.get_attribute('href') if link_el else ''
-
-            price = parse_price(price_text)
+            price = _extract_price(text)
             if not price or price < 500 or price > 15000:
                 continue
+
+            title = _extract_title(text)
+
+            full_url = href if href.startswith('http') else f"https://www.olx.com.br{href}"
 
             listings.append({
                 'model': model,
@@ -66,7 +66,7 @@ def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[d
                 'city': city,
                 'source': 'olx',
                 'title': title[:255],
-                'url': href if href.startswith('http') else f"https://www.olx.com.br{href}",
+                'url': full_url.split('?')[0],
                 'collected_at': date.today().isoformat(),
             })
         except Exception:
@@ -75,10 +75,9 @@ def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[d
     return listings
 
 
-def parse_price(text: str) -> float | None:
-    """Parse BRL prices from OLX format like 'R$ 2.500'."""
-    text = text.replace('\xa0', ' ').strip()
-
+def _extract_price(text: str) -> float | None:
+    """Extract the first R$ price from text."""
+    text = text.replace('\xa0', ' ')
     match = re.search(r'R\$\s*([\d.]+(?:,\d{2})?)', text)
     if match:
         price_str = match.group(1).replace('.', '').replace(',', '.')
@@ -86,11 +85,13 @@ def parse_price(text: str) -> float | None:
             return float(price_str)
         except ValueError:
             pass
-
-    digits = re.sub(r'[^\d]', '', text)
-    if digits:
-        val = float(digits)
-        if 500 <= val <= 15000:
-            return val
-
     return None
+
+
+def _extract_title(text: str) -> str:
+    """Extract the title portion from the ad text (before the R$)."""
+    idx = text.find('R$')
+    if idx > 0:
+        return text[:idx].strip().rstrip('/')
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    return lines[0] if lines else ''
