@@ -4,26 +4,23 @@
         <p class="text-apple-muted mt-1">Anúncios coletados nos últimos 7 dias.</p>
     </div>
 
-    <x-card class="mb-6">
-        <form method="GET" action="{{ route('market-radar') }}" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <select name="model" class="input-field text-sm">
+    <x-card class="mb-6" x-data="marketRadarFilter()">
+        <form method="GET" action="{{ route('market-radar') }}" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <select name="model" class="input-field text-sm" x-model="selectedModel" @change="onModelChange()">
                 <option value="">Todos os modelos</option>
                 @foreach(array_keys($models) as $model)
-                    <option value="{{ $model }}" @selected(request('model') === $model)>{{ $model }}</option>
+                    <option value="{{ $model }}">{{ $model }}</option>
                 @endforeach
             </select>
 
-            <select name="storage" class="input-field text-sm">
-                <option value="">Todo storage</option>
+            <select name="storage" class="input-field text-sm" x-ref="storageSelect">
+                <option value="">Todas capacidades</option>
                 @foreach(['64GB','128GB','256GB','512GB','1TB'] as $s)
-                    <option value="{{ $s }}" @selected(request('storage') === $s)>{{ $s }}</option>
-                @endforeach
-            </select>
-
-            <select name="city" class="input-field text-sm">
-                <option value="">Todas cidades</option>
-                @foreach($cities as $city)
-                    <option value="{{ $city }}" @selected(request('city') === $city)>{{ $city }}</option>
+                    <option value="{{ $s }}"
+                            :disabled="!storageVisible('{{ $s }}')"
+                            :style="storageVisible('{{ $s }}') ? '' : 'display:none'"
+                            @if(request('storage') === $s) selected @endif
+                    >{{ $s }}</option>
                 @endforeach
             </select>
 
@@ -68,4 +65,23 @@
             {{ $listings->withQueryString()->links() }}
         </div>
     @endif
+
+    <script>
+        function marketRadarFilter() {
+            return {
+                modelsMap: @json($models),
+                selectedModel: '{{ request('model', '') }}',
+                storageVisible(storage) {
+                    if (!this.selectedModel || !this.modelsMap[this.selectedModel]) return true;
+                    return this.modelsMap[this.selectedModel].includes(storage);
+                },
+                onModelChange() {
+                    const sel = this.$refs.storageSelect;
+                    if (sel.value && !this.storageVisible(sel.value)) {
+                        sel.value = '';
+                    }
+                }
+            }
+        }
+    </script>
 </x-layouts.app>

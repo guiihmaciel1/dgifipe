@@ -19,18 +19,13 @@ class MarketRadarController extends Controller
             $query->where('storage', $request->storage);
         }
 
-        if ($request->filled('city')) {
-            $query->where('city', $request->city);
-        }
-
         if ($request->filled('source')) {
             $query->where('source', $request->source);
         }
 
         $listings = $query->latest('collected_at')->paginate(30);
         $models = config('dgifipe.models');
-        $cities = config('dgifipe.cities');
 
-        return view('market-radar.index', compact('listings', 'models', 'cities'));
+        return view('market-radar.index', compact('listings', 'models'));
     }
 }

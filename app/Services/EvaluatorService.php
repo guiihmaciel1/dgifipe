@@ -16,7 +16,8 @@ class EvaluatorService
         $cities = config('dgifipe.cities');
         $lookbackDays = config('dgifipe.listing_lookback_days');
 
-        $listings = MarketListing::forModel($model, $storage)
+        $listings = MarketListing::excludeSealed()
+            ->forModel($model, $storage)
             ->inCities($cities)
             ->recent($lookbackDays)
             ->pluck('price')

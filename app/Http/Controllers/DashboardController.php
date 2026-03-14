@@ -29,7 +29,8 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $totalListings = MarketListing::where('collected_at', '>=', now()->subDays(7))->count();
+        $totalListings = MarketListing::excludeSealed()
+            ->where('collected_at', '>=', now()->subDays(7))->count();
 
         return view('dashboard.index', compact(
             'todayEvaluations',
