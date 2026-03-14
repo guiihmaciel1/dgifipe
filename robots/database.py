@@ -1,30 +1,19 @@
-import re
 import mysql.connector
 from mysql.connector import Error
 from datetime import date
 from config import DB_CONFIG
-
-SKIP_KEYWORDS = re.compile(
-    r'\b(lacrado|lacrada|selado|selada|sealed|new & sealed|novo na caixa|zero na caixa)\b',
-    re.IGNORECASE,
-)
+from listing_filter import should_skip
 
 
 def get_connection():
     return mysql.connector.connect(**DB_CONFIG)
 
 
-def _should_skip(listing: dict) -> bool:
-    """Returns True if the listing looks like a brand-new (sealed) device."""
-    title = listing.get('title', '')
-    return bool(SKIP_KEYWORDS.search(title))
-
-
 def insert_listings(listings: list[dict]) -> int:
     """
     Insert listings into the market_listings table.
-    Skips listings whose title indicates a brand-new/sealed device.
-    Returns the number of inserted rows.
+    Skips sealed devices and listings whose title contradicts the
+    searched model/storage. Returns the number of inserted rows.
     """
     if not listings:
         return 0
@@ -43,7 +32,7 @@ def insert_listings(listings: list[dict]) -> int:
         """
 
         for listing in listings:
-            if _should_skip(listing):
+            if should_skip(listing):
                 continue
 
             try:
