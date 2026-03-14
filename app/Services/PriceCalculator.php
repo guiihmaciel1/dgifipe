@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\CompanySetting;
-
 class PriceCalculator
 {
     public function trimOutliers(array $sortedPrices, int $percentage): array
@@ -37,26 +35,23 @@ class PriceCalculator
         return compact('average', 'median', 'min', 'max');
     }
 
-    public function calculateConditionDiscount(array $conditions, CompanySetting $settings): float
-    {
-        $total = 0.0;
-
-        foreach ($conditions as $condition) {
-            $total += $settings->getConditionDiscount($condition);
-        }
-
-        return $total;
-    }
-
-    public function applySuggestedPrice(
-        float $marketAverage,
-        float $conditionDiscount,
-        float $batteryDiscount,
-        float $margin
+    /**
+     * Fórmula aditiva: Preco = floor(Mercado * (1 - (margem - modificadores)) / 100) * 100
+     *
+     * Modificador positivo (+3% acessórios) -> reduz desconto -> preço sobe
+     * Modificador negativo (-15% bateria) -> aumenta desconto -> preço desce
+     */
+    public function calculateSuggestedPrice(
+        float $marketAvg,
+        float $margin,
+        float $batteryMod,
+        float $deviceStateMod,
+        float $accessoryMod,
     ): float {
-        return $marketAverage
-            * (1 - ($conditionDiscount / 100))
-            * (1 - ($batteryDiscount / 100))
-            * (1 - ($margin / 100));
+        $totalModifier = $batteryMod + $deviceStateMod + $accessoryMod;
+        $totalDiscount = ($margin / 100) - ($totalModifier / 100);
+        $raw = $marketAvg * (1 - $totalDiscount);
+
+        return floor($raw / 100) * 100;
     }
 }

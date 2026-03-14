@@ -16,16 +16,24 @@
                 @if(!empty($sim->conditions))
                     <div class="flex flex-wrap gap-2 mt-3">
                         @php
-                            $labels = [
-                                'no_box' => 'Sem caixa',
-                                'no_cable' => 'Sem cabo',
-                                'screen_replaced' => 'Tela trocada',
-                                'face_id_issue' => 'Face ID com problema',
-                            ];
+                            $conds = $sim->conditions;
+                            $stateLabels = ['original' => 'Original', 'repaired' => 'Reparado'];
+                            $accLabels = ['complete' => 'Acessórios completos', 'partial' => 'Acessórios parciais', 'none' => 'Sem acessórios'];
                         @endphp
-                        @foreach($sim->conditions as $cond)
-                            <span class="badge-warning">{{ $labels[$cond] ?? $cond }}</span>
-                        @endforeach
+                        @if(!empty($conds['device_state']))
+                            <span class="{{ ($conds['device_state'] ?? '') === 'original' ? 'badge-success' : 'badge-warning' }}">
+                                {{ $stateLabels[$conds['device_state']] ?? $conds['device_state'] }}
+                            </span>
+                        @endif
+                        @if(!empty($conds['no_box']))
+                            <span class="badge-warning">Sem caixa</span>
+                        @endif
+                        @if(!empty($conds['no_cable']))
+                            <span class="badge-warning">Sem cabo</span>
+                        @endif
+                        @if(!empty($conds['accessory_level']))
+                            <span class="badge-info">{{ $accLabels[$conds['accessory_level']] ?? $conds['accessory_level'] }}</span>
+                        @endif
                     </div>
                 @endif
             </x-card>

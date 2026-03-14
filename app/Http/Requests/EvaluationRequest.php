@@ -18,8 +18,9 @@ class EvaluationRequest extends FormRequest
             'model' => ['required', 'string', Rule::in(array_keys(config('dgifipe.models')))],
             'storage' => ['required', 'string'],
             'battery_health' => ['required', 'integer', 'min:0', 'max:100'],
-            'conditions' => ['nullable', 'array'],
-            'conditions.*' => ['string', Rule::in(['no_box', 'no_cable', 'screen_replaced', 'face_id_issue'])],
+            'device_state' => ['required', 'string', Rule::in(['original', 'repaired'])],
+            'no_box' => ['boolean'],
+            'no_cable' => ['boolean'],
         ];
     }
 }

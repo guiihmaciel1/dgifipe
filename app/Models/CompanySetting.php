@@ -12,12 +12,18 @@ class CompanySetting extends Model
         'default_margin',
         'depreciation_rules',
         'condition_discounts',
+        'battery_rules',
+        'device_state_options',
+        'accessory_options',
     ];
 
     protected $casts = [
         'default_margin' => 'decimal:2',
         'depreciation_rules' => 'array',
         'condition_discounts' => 'array',
+        'battery_rules' => 'array',
+        'device_state_options' => 'array',
+        'accessory_options' => 'array',
     ];
 
     public function company(): BelongsTo
@@ -25,22 +31,45 @@ class CompanySetting extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function getConditionDiscount(string $condition): float
+    public function getBatteryModifier(int $health): float
     {
-        $discounts = $this->condition_discounts ?? config('dgifipe.default_condition_discounts');
-        return (float) ($discounts[$condition] ?? 0);
-    }
-
-    public function getBatteryDepreciation(int $health): float
-    {
-        $rules = $this->depreciation_rules ?? config('dgifipe.default_depreciation_rules');
+        $rules = $this->battery_rules ?? config('dgifipe.default_battery_rules');
 
         foreach ($rules as $rule) {
             if ($health >= $rule['min'] && $health <= $rule['max']) {
-                return (float) $rule['discount'];
+                return (float) $rule['modifier'];
             }
         }
 
-        return 12.0;
+        return -25.0;
+    }
+
+    public function getDeviceStateModifier(string $state): float
+    {
+        $options = $this->device_state_options ?? config('dgifipe.default_device_state_options');
+
+        return (float) ($options[$state] ?? 0);
+    }
+
+    public function getAccessoryModifier(string $level): float
+    {
+        $options = $this->accessory_options ?? config('dgifipe.default_accessory_options');
+
+        return (float) ($options[$level] ?? 0);
+    }
+
+    public function getBatteryRules(): array
+    {
+        return $this->battery_rules ?? config('dgifipe.default_battery_rules');
+    }
+
+    public function getDeviceStateOptions(): array
+    {
+        return $this->device_state_options ?? config('dgifipe.default_device_state_options');
+    }
+
+    public function getAccessoryOptions(): array
+    {
+        return $this->accessory_options ?? config('dgifipe.default_accessory_options');
     }
 }

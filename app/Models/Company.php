@@ -45,9 +45,10 @@ class Company extends Model
     public function getSettingsOrDefault(): CompanySetting
     {
         return $this->settings ?? new CompanySetting([
-            'default_margin' => 15.00,
-            'depreciation_rules' => config('dgifipe.default_depreciation_rules'),
-            'condition_discounts' => config('dgifipe.default_condition_discounts'),
+            'default_margin' => config('dgifipe.default_margin', 15),
+            'battery_rules' => config('dgifipe.default_battery_rules'),
+            'device_state_options' => config('dgifipe.default_device_state_options'),
+            'accessory_options' => config('dgifipe.default_accessory_options'),
         ]);
     }
 }

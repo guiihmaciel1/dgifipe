@@ -21,10 +21,15 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'default_margin' => ['required', 'numeric', 'min:0', 'max:50'],
-            'no_box' => ['required', 'numeric', 'min:0', 'max:30'],
-            'no_cable' => ['required', 'numeric', 'min:0', 'max:30'],
-            'screen_replaced' => ['required', 'numeric', 'min:0', 'max:30'],
-            'face_id_issue' => ['required', 'numeric', 'min:0', 'max:30'],
+            'battery_excellent' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'battery_good' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'battery_regular' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'battery_bad' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'state_original' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'state_repaired' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'acc_complete' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'acc_partial' => ['required', 'numeric', 'min:-50', 'max:50'],
+            'acc_none' => ['required', 'numeric', 'min:-50', 'max:50'],
         ]);
 
         $company = auth()->user()->company;
@@ -33,17 +38,25 @@ class SettingsController extends Controller
             ['company_id' => $company->id],
             [
                 'default_margin' => $data['default_margin'],
-                'condition_discounts' => [
-                    'no_box' => (float) $data['no_box'],
-                    'no_cable' => (float) $data['no_cable'],
-                    'screen_replaced' => (float) $data['screen_replaced'],
-                    'face_id_issue' => (float) $data['face_id_issue'],
+                'battery_rules' => [
+                    ['min' => 90, 'max' => 100, 'modifier' => (float) $data['battery_excellent']],
+                    ['min' => 80, 'max' => 89,  'modifier' => (float) $data['battery_good']],
+                    ['min' => 70, 'max' => 79,  'modifier' => (float) $data['battery_regular']],
+                    ['min' => 0,  'max' => 69,  'modifier' => (float) $data['battery_bad']],
                 ],
-                'depreciation_rules' => config('dgifipe.default_depreciation_rules'),
+                'device_state_options' => [
+                    'original' => (float) $data['state_original'],
+                    'repaired' => (float) $data['state_repaired'],
+                ],
+                'accessory_options' => [
+                    'complete' => (float) $data['acc_complete'],
+                    'partial'  => (float) $data['acc_partial'],
+                    'none'     => (float) $data['acc_none'],
+                ],
             ]
         );
 
-        ActivityLog::record('settings_updated', 'Configurações da empresa atualizadas');
+        ActivityLog::record('settings_updated', 'Configurações do avaliador atualizadas');
 
         return back()->with('success', 'Configurações salvas com sucesso.');
     }

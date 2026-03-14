@@ -14,18 +14,24 @@ return [
 
     'trim_percentage' => 20,
 
-    'default_condition_discounts' => [
-        'no_box' => 2,
-        'no_cable' => 1,
-        'screen_replaced' => 8,
-        'face_id_issue' => 15,
+    'default_margin' => 15,
+
+    'default_battery_rules' => [
+        ['min' => 90, 'max' => 100, 'modifier' => 0],
+        ['min' => 80, 'max' => 89,  'modifier' => -5],
+        ['min' => 70, 'max' => 79,  'modifier' => -15],
+        ['min' => 0,  'max' => 69,  'modifier' => -25],
     ],
 
-    'default_depreciation_rules' => [
-        ['min' => 90, 'max' => 100, 'discount' => 0],
-        ['min' => 80, 'max' => 89,  'discount' => 3],
-        ['min' => 70, 'max' => 79,  'discount' => 7],
-        ['min' => 0,  'max' => 69,  'discount' => 12],
+    'default_device_state_options' => [
+        'original' => 0,
+        'repaired' => -10,
+    ],
+
+    'default_accessory_options' => [
+        'complete' => 3,
+        'partial'  => 0,
+        'none'     => -3,
     ],
 
     'models' => [

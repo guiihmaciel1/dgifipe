@@ -10,8 +10,13 @@ class EvaluatorService
         private PriceCalculator $calculator
     ) {}
 
-    public function evaluate(string $model, string $storage, int $batteryHealth, array $conditions): array
-    {
+    public function evaluate(
+        string $model,
+        string $storage,
+        int $batteryHealth,
+        string $deviceState,
+        array $accessoryChecks,
+    ): array {
         $settings = auth()->user()->company->getSettingsOrDefault();
         $cities = config('dgifipe.cities');
         $lookbackDays = config('dgifipe.listing_lookback_days');
@@ -43,27 +48,46 @@ class EvaluatorService
         $trimmed = $this->calculator->trimOutliers($listings, config('dgifipe.trim_percentage'));
         $stats = $this->calculator->calculateStats($trimmed);
 
-        $conditionDiscount = $this->calculator->calculateConditionDiscount($conditions, $settings);
-        $batteryDiscount = $settings->getBatteryDepreciation($batteryHealth);
         $margin = (float) $settings->default_margin;
+        $batteryMod = $settings->getBatteryModifier($batteryHealth);
+        $deviceStateMod = $settings->getDeviceStateModifier($deviceState);
+        $accessoryLevel = self::resolveAccessoryLevel($accessoryChecks);
+        $accessoryMod = $settings->getAccessoryModifier($accessoryLevel);
 
-        $suggestedPrice = $this->calculator->applySuggestedPrice(
+        $suggestedPrice = $this->calculator->calculateSuggestedPrice(
             $stats['average'],
-            $conditionDiscount,
-            $batteryDiscount,
-            $margin
+            $margin,
+            $batteryMod,
+            $deviceStateMod,
+            $accessoryMod,
         );
 
         return [
             'market_average' => round($stats['average'], 2),
             'price_min' => round($stats['min'], 2),
             'price_max' => round($stats['max'], 2),
-            'suggested_price' => round($suggestedPrice, 2),
+            'suggested_price' => $suggestedPrice,
             'listings_count' => $listingsCount,
             'low_data_warning' => $lowDataWarning,
-            'condition_discount' => $conditionDiscount,
-            'battery_discount' => $batteryDiscount,
             'margin' => $margin,
+            'battery_modifier' => $batteryMod,
+            'device_state_modifier' => $deviceStateMod,
+            'accessory_level' => $accessoryLevel,
+            'accessory_modifier' => $accessoryMod,
         ];
+    }
+
+    /**
+     * Nenhum check marcado = completo, 1 = parcial, 2 = nenhum
+     */
+    public static function resolveAccessoryLevel(array $checks): string
+    {
+        $count = count(array_filter($checks));
+
+        return match (true) {
+            $count === 0 => 'complete',
+            $count === 1 => 'partial',
+            default => 'none',
+        };
     }
 }

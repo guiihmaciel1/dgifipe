@@ -1,4 +1,4 @@
-<x-layouts.app title="Avaliador">
+<x-layouts.app>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-apple-text tracking-tight">Avaliador de iPhone</h1>
         <p class="text-apple-muted mt-1">Descubra o preço ideal de compra.</p>
@@ -41,8 +41,13 @@
                 </div>
 
                 <div>
-                    <label class="label">Saúde da Bateria: <span x-text="form.battery_health + '%'" class="text-apple-text"></span></label>
-                    <input type="range" x-model="form.battery_health" min="0" max="100" step="1"
+                    <label class="label">
+                        Saúde da Bateria: <span x-text="form.battery_health + '%'" class="text-apple-text"></span>
+                        <span class="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
+                              :class="batteryBadgeClass"
+                              x-text="batteryLabel"></span>
+                    </label>
+                    <input type="range" x-model.number="form.battery_health" min="0" max="100" step="1"
                            class="w-full h-2 bg-apple-bg rounded-full appearance-none cursor-pointer accent-apple-blue">
                     <div class="flex justify-between text-xs text-apple-muted mt-1">
                         <span>0%</span>
@@ -51,15 +56,43 @@
                 </div>
 
                 <div>
-                    <label class="label">Condições</label>
+                    <label class="label">Estado do Aparelho</label>
+                    <div class="flex gap-2">
+                        <button type="button" @click="form.device_state = 'original'"
+                                class="flex-1 px-4 py-2.5 rounded-apple text-sm font-medium transition-all duration-200"
+                                :class="form.device_state === 'original'
+                                    ? 'bg-apple-blue text-white shadow-sm'
+                                    : 'bg-apple-bg text-apple-text hover:bg-gray-200'">
+                            Original
+                        </button>
+                        <button type="button" @click="form.device_state = 'repaired'"
+                                class="flex-1 px-4 py-2.5 rounded-apple text-sm font-medium transition-all duration-200"
+                                :class="form.device_state === 'repaired'
+                                    ? 'bg-apple-blue text-white shadow-sm'
+                                    : 'bg-apple-bg text-apple-text hover:bg-gray-200'">
+                            Já foi aberto / trocou peça
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label">
+                        Acessórios
+                        <span class="ml-2 text-xs font-normal px-2 py-0.5 rounded-full"
+                              :class="accessoryBadgeClass"
+                              x-text="accessoryLabel"></span>
+                    </label>
                     <div class="space-y-2">
-                        <template x-for="(label, key) in conditionLabels" :key="key">
-                            <label class="flex items-center gap-3 p-3 rounded-apple bg-apple-bg cursor-pointer hover:bg-gray-100 transition-colors">
-                                <input type="checkbox" :value="key" x-model="form.conditions"
-                                       class="w-5 h-5 rounded border-apple-separator text-apple-blue focus:ring-apple-blue">
-                                <span class="text-sm text-apple-text" x-text="label"></span>
-                            </label>
-                        </template>
+                        <label class="flex items-center gap-3 p-3 rounded-apple bg-apple-bg cursor-pointer hover:bg-gray-100 transition-colors">
+                            <input type="checkbox" x-model="form.no_box"
+                                   class="w-5 h-5 rounded border-apple-separator text-apple-blue focus:ring-apple-blue">
+                            <span class="text-sm text-apple-text">Sem caixa</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-apple bg-apple-bg cursor-pointer hover:bg-gray-100 transition-colors">
+                            <input type="checkbox" x-model="form.no_cable"
+                                   class="w-5 h-5 rounded border-apple-separator text-apple-blue focus:ring-apple-blue">
+                            <span class="text-sm text-apple-text">Sem cabo</span>
+                        </label>
                     </div>
                 </div>
 
@@ -108,17 +141,18 @@
                                 <p class="label">Anúncios Analisados</p>
                                 <p class="text-xl font-semibold text-apple-text" x-text="result.listings_count"></p>
                             </div>
-                            <div class="text-right text-sm text-apple-muted">
-                                <p>Margem: <span x-text="result.margin + '%'"></span></p>
-                                <p>Desc. condição: <span x-text="result.condition_discount + '%'"></span></p>
-                                <p>Desc. bateria: <span x-text="result.battery_discount + '%'"></span></p>
+                            <div class="text-right text-sm text-apple-muted space-y-0.5">
+                                <p>Margem base: <span x-text="result.margin + '%'"></span></p>
+                                <p>Bateria: <span x-text="formatModifier(result.battery_modifier)"></span></p>
+                                <p>Estado: <span x-text="formatModifier(result.device_state_modifier)"></span></p>
+                                <p>Acessórios: <span x-text="formatModifier(result.accessory_modifier)"></span></p>
                             </div>
                         </div>
                     </x-card>
 
                     <div x-show="result.low_data_warning"
                          class="p-4 rounded-apple-lg bg-apple-orange/10 text-apple-orange text-sm font-medium">
-                        ⚠ Poucos anúncios encontrados. O resultado pode não ser preciso.
+                        Poucos anúncios encontrados. O resultado pode não ser preciso.
                     </div>
                 </div>
             </template>
@@ -149,19 +183,14 @@
                 form: {
                     model: 'iPhone 11',
                     storage: '64GB',
-                    battery_health: 85,
-                    conditions: [],
+                    battery_health: 100,
+                    device_state: 'original',
+                    no_box: false,
+                    no_cable: false,
                 },
                 result: null,
                 error: null,
                 loading: false,
-
-                conditionLabels: {
-                    no_box: 'Sem caixa',
-                    no_cable: 'Sem cabo',
-                    screen_replaced: 'Tela trocada',
-                    face_id_issue: 'Face ID com problema',
-                },
 
                 get selectedModelLabel() {
                     return this.form.model || '';
@@ -169,6 +198,34 @@
 
                 get availableStorages() {
                     return this.models[this.form.model] || [];
+                },
+
+                get batteryLabel() {
+                    if (this.form.battery_health >= 90) return 'Excelente';
+                    if (this.form.battery_health >= 80) return 'Bom';
+                    if (this.form.battery_health >= 70) return 'Regular';
+                    return 'Ruim';
+                },
+
+                get batteryBadgeClass() {
+                    if (this.form.battery_health >= 90) return 'bg-green-100 text-green-700';
+                    if (this.form.battery_health >= 80) return 'bg-yellow-100 text-yellow-700';
+                    if (this.form.battery_health >= 70) return 'bg-orange-100 text-orange-700';
+                    return 'bg-red-100 text-red-700';
+                },
+
+                get accessoryLabel() {
+                    const count = (this.form.no_box ? 1 : 0) + (this.form.no_cable ? 1 : 0);
+                    if (count === 0) return 'Completo (+3%)';
+                    if (count === 1) return 'Parcial (0%)';
+                    return 'Nenhum (-3%)';
+                },
+
+                get accessoryBadgeClass() {
+                    const count = (this.form.no_box ? 1 : 0) + (this.form.no_cable ? 1 : 0);
+                    if (count === 0) return 'bg-green-100 text-green-700';
+                    if (count === 1) return 'bg-yellow-100 text-yellow-700';
+                    return 'bg-red-100 text-red-700';
                 },
 
                 filteredModels(search) {
@@ -190,6 +247,11 @@
                 formatPrice(val) {
                     if (val === null || val === undefined) return '—';
                     return 'R$ ' + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                },
+
+                formatModifier(val) {
+                    if (val > 0) return '+' + val + '%';
+                    return val + '%';
                 },
 
                 async calculate() {
