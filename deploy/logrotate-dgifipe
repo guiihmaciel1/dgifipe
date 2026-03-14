@@ -1,0 +1,19 @@
+/root/dgifipe/storage/logs/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 www-data www-data
+}
+
+/var/log/dgifipe/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+}

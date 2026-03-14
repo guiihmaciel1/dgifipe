@@ -1,0 +1,11 @@
+# DG iFipe - Crontab entries
+# Add via: crontab -e
+
+# Robot: coleta de anúncios diária às 03:00
+0 3 * * * cd /root/dgifipe/robots && /root/dgifipe/robots/venv/bin/python main.py >> /var/log/dgifipe/robot.log 2>&1
+
+# Backup MySQL diário às 04:00
+0 4 * * * mysqldump -u dgifipe -p'CHANGE_PASSWORD' dgifipe | gzip > /root/backups/dgifipe_$(date +\%Y\%m\%d).sql.gz && find /root/backups -name "dgifipe_*.sql.gz" -mtime +7 -delete
+
+# Laravel scheduler (se necessário no futuro)
+* * * * * cd /root/dgifipe && php artisan schedule:run >> /dev/null 2>&1
