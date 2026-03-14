@@ -28,7 +28,6 @@
                     <x-sidebar-link route="evaluator" icon="calculator">Avaliador</x-sidebar-link>
                     <x-sidebar-link route="market-radar" icon="radar">Market Radar</x-sidebar-link>
                     <x-sidebar-link route="history" icon="clock">Histórico</x-sidebar-link>
-                    <x-sidebar-link route="manual-upload" icon="upload">Upload Manual</x-sidebar-link>
 
                     @if(auth()->user()->isAdmin())
                         <div class="mt-4 mb-2">
@@ -114,7 +113,9 @@
                 <x-mobile-tab route="evaluator" icon="calculator" label="Avaliar" />
                 <x-mobile-tab route="market-radar" icon="radar" label="Radar" />
                 <x-mobile-tab route="history" icon="clock" label="Histórico" />
-                <x-mobile-tab route="manual-upload" icon="upload" label="Upload" />
+                @if(auth()->user()->isAdmin())
+                    <x-mobile-tab route="admin.settings" icon="settings" label="Config" />
+                @endif
             @endif
         </div>
     </nav>
