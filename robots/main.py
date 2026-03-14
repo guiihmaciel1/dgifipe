@@ -5,6 +5,7 @@ Marketplace scraper. Runs daily via cron to collect iPhone listings
 from Facebook Marketplace and OLX. Communicates with Laravel via shared MySQL database.
 """
 
+import argparse
 import time
 import traceback
 from datetime import datetime
@@ -54,12 +55,29 @@ def run_olx(page, model, storage, city):
         return 0, str(e)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='DG iFipe Robot')
+    parser.add_argument('--facebook', action='store_true', help='Scrape only Facebook')
+    parser.add_argument('--olx', action='store_true', help='Scrape only OLX')
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+    use_facebook = args.facebook or not (args.facebook or args.olx)
+    use_olx = args.olx or not (args.facebook or args.olx)
+
     start_time = time.time()
     total_ads = 0
     total_errors = 0
 
-    print(f"[{datetime.now()}] Robot starting...")
+    sources = []
+    if use_facebook:
+        sources.append('Facebook')
+    if use_olx:
+        sources.append('OLX')
+
+    print(f"[{datetime.now()}] Robot starting... Sources: {', '.join(sources)}")
     notify_start()
 
     try:
@@ -78,21 +96,23 @@ def main():
                     for city in CITIES:
                         label = f"{model} {storage} - {city}"
 
-                        count, err = run_facebook(page, model, storage, city)
-                        if err:
-                            total_errors += 1
-                            print(f"  FB ERROR: {label} -> {err}")
-                        elif count > 0:
-                            total_ads += count
-                            print(f"  FB: {label} -> {count} ads")
+                        if use_facebook:
+                            count, err = run_facebook(page, model, storage, city)
+                            if err:
+                                total_errors += 1
+                                print(f"  FB ERROR: {label} -> {err}")
+                            elif count > 0:
+                                total_ads += count
+                                print(f"  FB: {label} -> {count} ads")
 
-                        count, err = run_olx(page, model, storage, city)
-                        if err:
-                            total_errors += 1
-                            print(f"  OLX ERROR: {label} -> {err}")
-                        elif count > 0:
-                            total_ads += count
-                            print(f"  OLX: {label} -> {count} ads")
+                        if use_olx:
+                            count, err = run_olx(page, model, storage, city)
+                            if err:
+                                total_errors += 1
+                                print(f"  OLX ERROR: {label} -> {err}")
+                            elif count > 0:
+                                total_ads += count
+                                print(f"  OLX: {label} -> {count} ads")
 
         finally:
             browser.close()
