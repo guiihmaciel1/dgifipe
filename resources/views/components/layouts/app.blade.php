@@ -29,6 +29,7 @@
                     <x-sidebar-link route="market-radar" icon="radar">Market Radar</x-sidebar-link>
                     <x-sidebar-link route="alerts.index" icon="bell">Oportunidades</x-sidebar-link>
                     <x-sidebar-link route="history" icon="clock">Histórico</x-sidebar-link>
+                    <x-sidebar-link route="compare" icon="compare">Comparador</x-sidebar-link>
 
                     @if(auth()->user()->isAdmin())
                         <div class="mt-4 mb-2">
