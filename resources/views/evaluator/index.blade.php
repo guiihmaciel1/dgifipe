@@ -113,22 +113,20 @@
         <div>
             <template x-if="result">
                 <div class="space-y-4">
-                    {{-- Ver no Market Radar --}}
-                    <div class="flex justify-end">
-                        <a :href="marketRadarUrl" target="_blank"
-                           class="text-sm text-apple-blue hover:text-apple-blue/80 font-medium flex items-center gap-1.5 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                            </svg>
-                            Ver no Market Radar
-                        </a>
-                    </div>
-
                     {{-- Preço Sugerido de Compra --}}
                     <x-card>
                         <p class="label">Preço Sugerido de Compra</p>
                         <p class="price-accent" x-text="formatPrice(result.suggested_price)"></p>
-                        <p class="text-sm text-apple-muted mt-2">Valor ideal para adquirir este aparelho.</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <p class="text-sm text-apple-muted">Valor ideal para adquirir este aparelho.</p>
+                            <a :href="marketRadarUrl" target="_blank"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-apple text-xs font-medium bg-apple-bg text-apple-muted hover:bg-gray-200 hover:text-apple-text transition-colors shrink-0 ml-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                                </svg>
+                                Market Radar
+                            </a>
+                        </div>
                     </x-card>
 
                     {{-- Preço Sugerido de Revenda --}}
