@@ -8,6 +8,7 @@ use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ManualUploadController;
 use App\Http\Controllers\MarketRadarController;
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,10 @@ Route::middleware(['auth', 'single-login', 'company-active'])->group(function ()
 
     Route::get('/manual-upload', [ManualUploadController::class, 'index'])->name('manual-upload');
     Route::post('/manual-upload', [ManualUploadController::class, 'store'])->middleware('throttle:10,1');
+
+    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
+    Route::put('/alerts/{alert}/dismiss', [AlertController::class, 'dismiss'])->name('alerts.dismiss');
+    Route::get('/alerts/count', [AlertController::class, 'count'])->name('alerts.count');
 
     Route::middleware('role:admin,superadmin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('team', UserController::class)->except(['show']);
