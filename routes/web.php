@@ -43,10 +43,13 @@ Route::middleware(['auth', 'single-login', 'company-active'])->group(function ()
     Route::get('/alerts/count', [AlertController::class, 'count'])->name('alerts.count');
 
     Route::middleware('role:admin,superadmin')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('team', UserController::class)->except(['show']);
-        Route::put('team/{user}/toggle', [UserController::class, 'toggle'])->name('team.toggle');
         Route::get('settings', [SettingsController::class, 'edit'])->name('settings');
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+    });
+
+    Route::middleware('role:superadmin')->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('team', UserController::class)->except(['show']);
+        Route::put('team/{user}/toggle', [UserController::class, 'toggle'])->name('team.toggle');
     });
 
     Route::middleware('role:superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {

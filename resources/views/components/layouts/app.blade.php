@@ -35,7 +35,6 @@
                         <div class="mt-4 mb-2">
                             <span class="label text-xs">Administração</span>
                         </div>
-                        <x-sidebar-link route="admin.team.index" icon="users">Equipe</x-sidebar-link>
                         <x-sidebar-link route="admin.settings" icon="settings">Configurações</x-sidebar-link>
                     @endif
                 @endif
