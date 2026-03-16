@@ -1,8 +1,11 @@
+import logging
 import mysql.connector
 from mysql.connector import Error
 from datetime import date
 from config import DB_CONFIG
 from listing_filter import should_skip
+
+logger = logging.getLogger(__name__)
 
 
 def get_connection():
@@ -47,7 +50,12 @@ def insert_listings(listings: list[dict]) -> int:
                     listing.get('collected_at', date.today().isoformat()),
                 ))
                 inserted += 1
-            except Error:
+            except Error as row_err:
+                logger.warning(
+                    "Insert failed for %s %s (%s): %s",
+                    listing.get('model'), listing.get('storage'),
+                    listing.get('source'), row_err,
+                )
                 continue
 
         conn.commit()

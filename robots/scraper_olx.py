@@ -1,9 +1,12 @@
+import logging
 import re
 import time
 import urllib.parse
 from datetime import date
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout
 from config import CITY_OLX_SLUGS, SEARCH_KEYWORDS_TEMPLATE, REQUEST_DELAY_SECONDS
+
+logger = logging.getLogger(__name__)
 
 
 def scrape_olx(page: Page, model: str, storage: str, city: str) -> list[dict]:
@@ -22,7 +25,7 @@ def scrape_olx(page: Page, model: str, storage: str, city: str) -> list[dict]:
         listings = _extract_listings(page, model, storage, city)
 
     except PlaywrightTimeout:
-        pass
+        logger.warning("Timeout scraping OLX: %s %s - %s", model, storage, city)
     except Exception:
         raise
 

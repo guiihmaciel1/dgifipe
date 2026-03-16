@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EvaluationSession;
 use App\Models\MarketListing;
 use App\Models\Simulation;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -24,13 +25,16 @@ class DashboardController extends Controller
 
         $totalEvaluations = EvaluationSession::where('company_id', $companyId)->count();
 
-        $recentSimulations = Simulation::whereHas('evaluationSession', fn ($q) => $q->where('company_id', $companyId))
+        $recentSimulations = Simulation::with('evaluationSession.user')
+            ->whereHas('evaluationSession', fn ($q) => $q->where('company_id', $companyId))
             ->latest()
             ->take(5)
             ->get();
 
-        $totalListings = MarketListing::excludeSealed()
-            ->where('collected_at', '>=', now()->subDays(7))->count();
+        $totalListings = Cache::remember('dashboard:total_listings', 300, fn () =>
+            MarketListing::excludeSealed()
+                ->where('collected_at', '>=', now()->subDays(7))->count()
+        );
 
         return view('dashboard.index', compact(
             'todayEvaluations',

@@ -32,7 +32,7 @@ Route::middleware(['auth', 'single-login', 'company-active'])->group(function ()
     Route::get('/history/{session}', [HistoryController::class, 'show'])->name('history.show');
 
     Route::get('/manual-upload', [ManualUploadController::class, 'index'])->name('manual-upload');
-    Route::post('/manual-upload', [ManualUploadController::class, 'store']);
+    Route::post('/manual-upload', [ManualUploadController::class, 'store'])->middleware('throttle:10,1');
 
     Route::middleware('role:admin,superadmin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('team', UserController::class)->except(['show']);

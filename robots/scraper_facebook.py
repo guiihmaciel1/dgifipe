@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 import urllib.parse
@@ -10,6 +11,8 @@ from config import (
     MAX_SCROLL_ATTEMPTS,
     REQUEST_DELAY_SECONDS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def scrape_facebook(page: Page, model: str, storage: str, city: str) -> list[dict]:
@@ -40,7 +43,7 @@ def scrape_facebook(page: Page, model: str, storage: str, city: str) -> list[dic
         listings = _extract_listings(page, model, storage, city)
 
     except PlaywrightTimeout:
-        pass
+        logger.warning("Timeout scraping Facebook: %s %s - %s", model, storage, city)
     except Exception:
         raise
 

@@ -6,11 +6,18 @@ from Facebook Marketplace and OLX. Communicates with Laravel via shared MySQL da
 """
 
 import argparse
+import logging
 import time
 import traceback
 from datetime import datetime
 
 from playwright.sync_api import sync_playwright
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 from config import MODELS, CITIES, HEADLESS, USER_AGENT
 from database import insert_listings, cleanup_old_listings

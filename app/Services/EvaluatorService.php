@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MarketListing;
+use Illuminate\Support\Facades\Cache;
 
 class EvaluatorService
 {
@@ -21,14 +22,17 @@ class EvaluatorService
         $cities = config('dgifipe.cities');
         $lookbackDays = config('dgifipe.listing_lookback_days');
 
-        $listings = MarketListing::excludeSealed()
-            ->forModel($model, $storage)
-            ->inCities($cities)
-            ->recent($lookbackDays)
-            ->pluck('price')
-            ->sort()
-            ->values()
-            ->toArray();
+        $cacheKey = "listings:{$model}:{$storage}";
+        $listings = Cache::remember($cacheKey, 900, fn () =>
+            MarketListing::excludeSealed()
+                ->forModel($model, $storage)
+                ->inCities($cities)
+                ->recent($lookbackDays)
+                ->pluck('price')
+                ->sort()
+                ->values()
+                ->toArray()
+        );
 
         $listingsCount = count($listings);
         $lowDataWarning = $listingsCount < config('dgifipe.min_listings_warning');
