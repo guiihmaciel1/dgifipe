@@ -32,6 +32,24 @@
             @error('default_margin') <p class="mt-1 text-xs text-apple-red">{{ $message }}</p> @enderror
         </x-card>
 
+        {{-- Margem de Revenda --}}
+        <x-card>
+            <h3 class="text-base font-semibold text-apple-text mb-4">Margem de Revenda</h3>
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm text-apple-text">Margem sobre o preço de compra</p>
+                    <p class="text-xs text-apple-muted">Para sugerir o preço de revenda ao atendente</p>
+                </div>
+                <div class="flex items-center gap-1">
+                    <input type="number" name="resale_margin" step="0.5" min="0" max="100"
+                           value="{{ old('resale_margin', $settings->resale_margin ?? 20) }}"
+                           class="input-field w-20 text-right" required>
+                    <span class="text-sm text-apple-muted">%</span>
+                </div>
+            </div>
+            @error('resale_margin') <p class="mt-1 text-xs text-apple-red">{{ $message }}</p> @enderror
+        </x-card>
+
         {{-- Bateria --}}
         <x-card>
             <h3 class="text-base font-semibold text-apple-text mb-1">Saúde da Bateria</h3>

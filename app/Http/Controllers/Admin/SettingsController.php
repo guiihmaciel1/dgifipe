@@ -21,6 +21,7 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'default_margin' => ['required', 'numeric', 'min:0', 'max:50'],
+            'resale_margin' => ['required', 'numeric', 'min:0', 'max:100'],
             'battery_excellent' => ['required', 'numeric', 'min:-50', 'max:50'],
             'battery_good' => ['required', 'numeric', 'min:-50', 'max:50'],
             'battery_regular' => ['required', 'numeric', 'min:-50', 'max:50'],
@@ -38,6 +39,7 @@ class SettingsController extends Controller
             ['company_id' => $company->id],
             [
                 'default_margin' => $data['default_margin'],
+                'resale_margin' => $data['resale_margin'],
                 'battery_rules' => [
                     ['min' => 90, 'max' => 100, 'modifier' => (float) $data['battery_excellent']],
                     ['min' => 80, 'max' => 89,  'modifier' => (float) $data['battery_good']],

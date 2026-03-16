@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EvaluationSession;
-use App\Models\MarketListing;
-use App\Models\Simulation;
-use Illuminate\Support\Facades\Cache;
+use App\Services\DashboardService;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private DashboardService $dashboard
+    ) {}
+
     public function index()
     {
         $user = auth()->user();
@@ -19,28 +20,17 @@ class DashboardController extends Controller
 
         $companyId = $user->company_id;
 
-        $todayEvaluations = EvaluationSession::where('company_id', $companyId)
-            ->whereDate('created_at', today())
-            ->count();
+        $stats = $this->dashboard->getStats($companyId);
+        $chart = $this->dashboard->getWeeklyChart($companyId);
+        $recentSimulations = $this->dashboard->getRecentSimulations($companyId);
+        $topModels = $this->dashboard->getTopModels($companyId);
 
-        $totalEvaluations = EvaluationSession::where('company_id', $companyId)->count();
-
-        $recentSimulations = Simulation::with('evaluationSession.user')
-            ->whereHas('evaluationSession', fn ($q) => $q->where('company_id', $companyId))
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $totalListings = Cache::remember('dashboard:total_listings', 300, fn () =>
-            MarketListing::excludeSealed()
-                ->where('collected_at', '>=', now()->subDays(7))->count()
-        );
-
-        return view('dashboard.index', compact(
-            'todayEvaluations',
-            'totalEvaluations',
-            'recentSimulations',
-            'totalListings',
-        ));
+        return view('dashboard.index', [
+            'user' => $user,
+            'stats' => $stats,
+            'chart' => $chart,
+            'recentSimulations' => $recentSimulations,
+            'topModels' => $topModels,
+        ]);
     }
 }

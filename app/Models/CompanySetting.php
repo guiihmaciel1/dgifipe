@@ -10,6 +10,7 @@ class CompanySetting extends Model
     protected $fillable = [
         'company_id',
         'default_margin',
+        'resale_margin',
         'depreciation_rules',
         'condition_discounts',
         'battery_rules',
@@ -19,6 +20,7 @@ class CompanySetting extends Model
 
     protected $casts = [
         'default_margin' => 'decimal:2',
+        'resale_margin' => 'decimal:2',
         'depreciation_rules' => 'array',
         'condition_discounts' => 'array',
         'battery_rules' => 'array',

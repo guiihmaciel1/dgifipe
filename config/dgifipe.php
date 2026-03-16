@@ -16,6 +16,8 @@ return [
 
     'default_margin' => 15,
 
+    'default_resale_margin' => 20,
+
     'default_battery_rules' => [
         ['min' => 90, 'max' => 100, 'modifier' => 0],
         ['min' => 80, 'max' => 89,  'modifier' => -5],

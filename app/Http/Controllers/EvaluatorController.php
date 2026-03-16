@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\EvaluationRequest;
-use App\Models\ActivityLog;
-use App\Models\EvaluationSession;
+use App\Jobs\SaveEvaluation;
 use App\Services\EvaluatorService;
 use Illuminate\Http\JsonResponse;
 
@@ -38,29 +37,11 @@ class EvaluatorController extends Controller
             accessoryChecks: $accessoryChecks,
         );
 
-        $session = EvaluationSession::create([
-            'user_id' => auth()->id(),
-        ]);
-
-        $session->simulations()->create([
-            'model' => $data['model'],
-            'storage' => $data['storage'],
-            'battery_health' => $data['battery_health'],
-            'conditions' => [
-                'device_state' => $data['device_state'],
-                'no_box' => !empty($data['no_box']),
-                'no_cable' => !empty($data['no_cable']),
-                'accessory_level' => $result['accessory_level'],
-            ],
-            'market_average' => $result['market_average'],
-            'price_min' => $result['price_min'],
-            'price_max' => $result['price_max'],
-            'suggested_price' => $result['suggested_price'],
-            'listings_count' => $result['listings_count'],
-            'low_data_warning' => $result['low_data_warning'],
-        ]);
-
-        ActivityLog::record('evaluation', "{$data['model']} {$data['storage']}");
+        SaveEvaluation::dispatchAfterResponse(
+            userId: auth()->id(),
+            data: $data,
+            result: $result,
+        );
 
         return response()->json($result);
     }

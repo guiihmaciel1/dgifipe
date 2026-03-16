@@ -18,7 +18,7 @@ class PriceCalculator
     public function calculateStats(array $prices): array
     {
         if (empty($prices)) {
-            return ['average' => 0, 'median' => 0, 'min' => 0, 'max' => 0];
+            return ['average' => 0, 'median' => 0, 'min' => 0, 'max' => 0, 'std_dev' => 0];
         }
 
         $count = count($prices);
@@ -32,7 +32,10 @@ class PriceCalculator
             ? ($prices[$middle - 1] + $prices[$middle]) / 2
             : $prices[$middle];
 
-        return compact('average', 'median', 'min', 'max');
+        $variance = array_sum(array_map(fn ($p) => ($p - $average) ** 2, $prices)) / $count;
+        $std_dev = sqrt($variance);
+
+        return compact('average', 'median', 'min', 'max', 'std_dev');
     }
 
     /**
@@ -53,5 +56,10 @@ class PriceCalculator
         $raw = $marketAvg * (1 - $totalDiscount);
 
         return floor($raw / 100) * 100;
+    }
+
+    public function calculateResalePrice(float $suggestedBuyPrice, float $resaleMargin): float
+    {
+        return floor($suggestedBuyPrice * (1 + $resaleMargin / 100) / 100) * 100;
     }
 }

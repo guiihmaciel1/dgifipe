@@ -25,7 +25,7 @@ Route::middleware(['auth', 'single-login', 'company-active'])->group(function ()
 
     Route::get('/evaluator', [EvaluatorController::class, 'index'])->name('evaluator');
     Route::post('/evaluator/calculate', [EvaluatorController::class, 'calculate'])
-        ->middleware('throttle:30,1')
+        ->middleware('throttle:60,1')
         ->name('evaluator.calculate');
 
     Route::get('/market-radar', [MarketRadarController::class, 'index'])->name('market-radar');

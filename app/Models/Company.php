@@ -46,6 +46,7 @@ class Company extends Model
     {
         return $this->settings ?? new CompanySetting([
             'default_margin' => config('dgifipe.default_margin', 15),
+            'resale_margin' => config('dgifipe.default_resale_margin', 20),
             'battery_rules' => config('dgifipe.default_battery_rules'),
             'device_state_options' => config('dgifipe.default_device_state_options'),
             'accessory_options' => config('dgifipe.default_accessory_options'),
