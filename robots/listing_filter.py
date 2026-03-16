@@ -6,6 +6,11 @@ SKIP_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 
+NOT_IPHONE = re.compile(
+    r'\b(ipad|macbook|mac book|apple watch|airpods|imac|mac mini|mac pro|mac studio|apple tv|homepod)\b',
+    re.IGNORECASE,
+)
+
 STORAGES = ['1tb', '512gb', '256gb', '128gb', '64gb']
 
 _MODEL_NAMES = sorted(MODELS.keys(), key=len, reverse=True)
@@ -56,6 +61,10 @@ def _is_contradictory(title: str, model: str, storage: str) -> bool:
 
 def should_skip(listing: dict) -> bool:
     title = listing.get('title', '')
+    if not title:
+        return False
     if SKIP_KEYWORDS.search(title):
+        return True
+    if NOT_IPHONE.search(title):
         return True
     return _is_contradictory(title, listing['model'], listing['storage'])

@@ -42,22 +42,32 @@
     @else
         <div class="space-y-3">
             @foreach($listings as $listing)
-                <x-card>
-                    <div class="flex items-center justify-between">
-                        <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-apple-text truncate">{{ $listing->model }} {{ $listing->storage }}</p>
-                            <p class="text-sm text-apple-muted truncate">{{ $listing->title ?? 'Sem título' }}</p>
-                            <div class="flex items-center gap-3 mt-1 text-xs text-apple-muted">
-                                <span>{{ $listing->city }}</span>
-                                <span class="badge-{{ $listing->source === 'manual' ? 'warning' : 'success' }}">{{ ucfirst($listing->source) }}</span>
-                                <span>{{ $listing->collected_at->format('d/m/Y') }}</span>
+                <a href="{{ $listing->url ?: '#' }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block transition-transform active:scale-[0.98] {{ $listing->url ? '' : 'pointer-events-none' }}">
+                    <x-card class="hover:ring-1 hover:ring-apple-blue/30">
+                        <div class="flex items-center justify-between">
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-apple-text truncate">{{ $listing->model }} {{ $listing->storage }}</p>
+                                <p class="text-sm text-apple-muted truncate">{{ $listing->title ?? 'Sem título' }}</p>
+                                <div class="flex items-center gap-3 mt-1 text-xs text-apple-muted">
+                                    <span>{{ $listing->city }}</span>
+                                    <span class="badge-{{ $listing->source === 'manual' ? 'warning' : 'success' }}">{{ ucfirst($listing->source) }}</span>
+                                    <span>{{ $listing->collected_at->format('d/m/Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 ml-4">
+                                <x-price-display :value="$listing->price" size="small" color="green" />
+                                @if($listing->url)
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-apple-muted flex-shrink-0">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                @endif
                             </div>
                         </div>
-                        <div class="text-right ml-4">
-                            <x-price-display :value="$listing->price" size="small" color="green" />
-                        </div>
-                    </div>
-                </x-card>
+                    </x-card>
+                </a>
             @endforeach
         </div>
 
