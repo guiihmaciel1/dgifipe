@@ -4,7 +4,6 @@
             <h1 class="text-2xl font-bold text-apple-text tracking-tight">Avaliador de iPhone</h1>
             <p class="text-apple-muted mt-1">Descubra o preço ideal de compra.</p>
         </div>
-        <button x-data x-show="false" x-ref="resetBtn" type="button"></button>
     </div>
 
     <div x-data="evaluator()" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -114,15 +113,15 @@
         <div>
             <template x-if="result">
                 <div class="space-y-4">
-                    {{-- Reset button --}}
+                    {{-- Ver no Market Radar --}}
                     <div class="flex justify-end">
-                        <button type="button" @click="resetForm()"
-                                class="text-sm text-apple-blue hover:text-apple-blue/80 font-medium flex items-center gap-1.5 transition-colors">
+                        <a :href="marketRadarUrl" target="_blank"
+                           class="text-sm text-apple-blue hover:text-apple-blue/80 font-medium flex items-center gap-1.5 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
                             </svg>
-                            Nova Avaliação
-                        </button>
+                            Ver no Market Radar
+                        </a>
                     </div>
 
                     {{-- Preço Sugerido de Compra --}}
@@ -421,6 +420,14 @@
                     const now = new Date();
                     const diffDays = (now - collected) / (1000 * 60 * 60 * 24);
                     return diffDays > 3;
+                },
+
+                get marketRadarUrl() {
+                    const base = '{{ route("market-radar") }}';
+                    const params = new URLSearchParams();
+                    if (this.form.model) params.set('model', this.form.model);
+                    if (this.form.storage) params.set('storage', this.form.storage);
+                    return base + '?' + params.toString();
                 },
 
                 get shareDateTime() {
