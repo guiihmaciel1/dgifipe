@@ -115,6 +115,10 @@ def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[d
             if not price or price < 500 or price > 15000:
                 continue
 
+            all_text = ' '.join(lines).lower()
+            if 'iphone' not in all_text:
+                continue
+
             title = _find_title_in_lines(lines)
 
             full_url = href

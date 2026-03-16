@@ -54,6 +54,9 @@ def _extract_listings(page: Page, model: str, storage: str, city: str) -> list[d
                 continue
             seen_urls.add(href)
 
+            if 'iphone' not in text.lower():
+                continue
+
             price = _extract_price(text)
             if not price or price < 500 or price > 15000:
                 continue
