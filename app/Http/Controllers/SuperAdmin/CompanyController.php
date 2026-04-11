@@ -71,6 +71,8 @@ class CompanyController extends Controller
 
     public function edit(Company $company)
     {
+        $company->load('settings');
+
         return view('superadmin.companies.edit', compact('company'));
     }
 
@@ -78,12 +80,22 @@ class CompanyController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'allow_concurrent_sessions' => ['nullable', 'boolean'],
+            'session_lifetime_days' => ['nullable', 'integer', 'min:1', 'max:365'],
         ]);
 
         $company->update([
             'name' => $data['name'],
             'slug' => Str::slug($data['name']),
         ]);
+
+        CompanySetting::updateOrCreate(
+            ['company_id' => $company->id],
+            [
+                'allow_concurrent_sessions' => $request->boolean('allow_concurrent_sessions'),
+                'session_lifetime_days' => $data['session_lifetime_days'] ?? null,
+            ]
+        );
 
         ActivityLog::record('company_updated', "Empresa {$company->name} atualizada");
 

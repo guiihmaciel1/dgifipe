@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CompanySessionLifetime;
 use App\Http\Middleware\EnforceSingleLogin;
 use App\Http\Middleware\EnsureCompanyActive;
 use App\Http\Middleware\RoleMiddleware;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'single-login' => EnforceSingleLogin::class,
             'company-active' => EnsureCompanyActive::class,
+            'company-session' => CompanySessionLifetime::class,
             'role' => RoleMiddleware::class,
         ]);
     })

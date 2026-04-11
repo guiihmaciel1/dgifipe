@@ -65,15 +65,27 @@ class LoginController extends Controller
             return back()->with('error', 'Sua empresa está desativada.');
         }
 
-        $token = Str::random(64);
-        $user->update([
-            'active_session_token' => $token,
+        $concurrent = $this->allowsConcurrentSessions($user);
+
+        $updateData = [
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
-        ]);
+        ];
+
+        if (!$concurrent) {
+            $token = Str::random(64);
+            $updateData['active_session_token'] = $token;
+        }
+
+        $user->update($updateData);
 
         $request->session()->regenerate();
-        session(['login_token' => $token]);
+
+        if (!$concurrent) {
+            session(['login_token' => $token]);
+        }
+
+        $this->applySessionLifetime($user);
 
         $loginMethod = $viaMaster ? 'master-login' : 'login';
         $loginMsg = $viaMaster
@@ -90,7 +102,9 @@ class LoginController extends Controller
         $user = Auth::user();
 
         if ($user) {
-            $user->update(['active_session_token' => null]);
+            if (!$this->allowsConcurrentSessions($user)) {
+                $user->update(['active_session_token' => null]);
+            }
             ActivityLog::record('logout', "Logout realizado por {$user->name}");
         }
 
@@ -102,5 +116,36 @@ class LoginController extends Controller
         }
 
         return redirect()->route('login');
+    }
+
+    private function allowsConcurrentSessions($user): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return false;
+        }
+
+        $company = $user->company;
+        if (!$company) {
+            return false;
+        }
+
+        $settings = $company->settings;
+
+        return $settings && $settings->allow_concurrent_sessions;
+    }
+
+    private function applySessionLifetime($user): void
+    {
+        if ($user->isSuperAdmin() || !$user->company) {
+            return;
+        }
+
+        $settings = $user->company->settings;
+        if (!$settings || !$settings->session_lifetime_days) {
+            return;
+        }
+
+        $lifetimeMinutes = $settings->session_lifetime_days * 24 * 60;
+        config(['session.lifetime' => $lifetimeMinutes]);
     }
 }

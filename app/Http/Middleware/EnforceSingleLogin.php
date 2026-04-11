@@ -13,6 +13,11 @@ class EnforceSingleLogin
     {
         if (Auth::check()) {
             $user = Auth::user();
+
+            if ($this->allowsConcurrentSessions($user)) {
+                return $next($request);
+            }
+
             $sessionToken = session('login_token');
 
             if ($sessionToken !== $user->active_session_token) {
@@ -26,5 +31,21 @@ class EnforceSingleLogin
         }
 
         return $next($request);
+    }
+
+    private function allowsConcurrentSessions($user): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return false;
+        }
+
+        $company = $user->company;
+        if (!$company) {
+            return false;
+        }
+
+        $settings = $company->settings;
+
+        return $settings && $settings->allow_concurrent_sessions;
     }
 }

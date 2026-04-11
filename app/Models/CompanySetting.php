@@ -16,6 +16,8 @@ class CompanySetting extends Model
         'battery_rules',
         'device_state_options',
         'accessory_options',
+        'allow_concurrent_sessions',
+        'session_lifetime_days',
     ];
 
     protected $casts = [
@@ -26,6 +28,8 @@ class CompanySetting extends Model
         'battery_rules' => 'array',
         'device_state_options' => 'array',
         'accessory_options' => 'array',
+        'allow_concurrent_sessions' => 'boolean',
+        'session_lifetime_days' => 'integer',
     ];
 
     public function company(): BelongsTo
