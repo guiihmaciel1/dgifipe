@@ -39,13 +39,13 @@ class PriceCalculator
     }
 
     /**
-     * Fórmula aditiva: Preco = floor(Mercado * (1 - (margem - modificadores)) / 100) * 100
+     * Fórmula aditiva: Preco = floor(Mediana * (1 - (margem - modificadores)) / 100) * 100
      *
      * Modificador positivo (+3% acessórios) -> reduz desconto -> preço sobe
      * Modificador negativo (-15% bateria) -> aumenta desconto -> preço desce
      */
     public function calculateSuggestedPrice(
-        float $marketAvg,
+        float $marketMedian,
         float $margin,
         float $batteryMod,
         float $deviceStateMod,
@@ -53,7 +53,7 @@ class PriceCalculator
     ): float {
         $totalModifier = $batteryMod + $deviceStateMod + $accessoryMod;
         $totalDiscount = ($margin / 100) - ($totalModifier / 100);
-        $raw = $marketAvg * (1 - $totalDiscount);
+        $raw = $marketMedian * (1 - $totalDiscount);
 
         return floor($raw / 100) * 100;
     }

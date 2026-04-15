@@ -63,7 +63,7 @@ class EvaluatorService
         $accessoryMod = $settings->getAccessoryModifier($accessoryLevel);
 
         $suggestedPrice = $this->calculator->calculateSuggestedPrice(
-            $stats['average'],
+            $stats['median'],
             $margin,
             $batteryMod,
             $deviceStateMod,

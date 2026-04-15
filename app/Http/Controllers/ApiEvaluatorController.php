@@ -85,7 +85,7 @@ class ApiEvaluatorController extends Controller
         $accessoryMod = $this->getAccessoryModifier($accessoryLevel);
 
         $suggestedPrice = $this->calculator->calculateSuggestedPrice(
-            $stats['average'], $margin, $batteryMod, $deviceStateMod, $accessoryMod,
+            $stats['median'], $margin, $batteryMod, $deviceStateMod, $accessoryMod,
         );
 
         $resalePrice = $this->calculator->calculateResalePrice($suggestedPrice, $resaleMargin);
