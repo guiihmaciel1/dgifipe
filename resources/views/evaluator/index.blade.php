@@ -133,7 +133,7 @@
                     <x-card>
                         <p class="label">Preço Sugerido de Revenda</p>
                         <p class="text-3xl font-bold text-apple-blue tracking-tight" x-text="formatPrice(result.resale_price)"></p>
-                        <p class="text-sm text-apple-muted mt-2">Margem de <span x-text="result.resale_margin + '%'"></span> sobre a compra.</p>
+                        <p class="text-sm text-apple-muted mt-2">Preço alinhado com a mediana.</p>
                     </x-card>
 
                     {{-- Barra de Desconto --}}
