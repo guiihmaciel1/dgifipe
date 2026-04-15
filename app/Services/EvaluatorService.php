@@ -70,7 +70,7 @@ class EvaluatorService
             $accessoryMod,
         );
 
-        $resalePrice = $this->calculator->calculateResalePrice($suggestedPrice, $resaleMargin);
+        $resalePrice = floor($stats['median'] / 100) * 100;
         $confidence = $this->calculateConfidence($listingsCount, $stats['std_dev'], $stats['average']);
         $lastEvaluation = $this->getLastEvaluation($model, $storage);
 
@@ -81,7 +81,6 @@ class EvaluatorService
             'price_max' => round($stats['max'], 2),
             'suggested_price' => $suggestedPrice,
             'resale_price' => $resalePrice,
-            'resale_margin' => $resaleMargin,
             'listings_count' => $listingsCount,
             'low_data_warning' => $lowDataWarning,
             'confidence' => $confidence,

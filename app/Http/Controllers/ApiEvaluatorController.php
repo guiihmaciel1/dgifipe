@@ -88,7 +88,7 @@ class ApiEvaluatorController extends Controller
             $stats['median'], $margin, $batteryMod, $deviceStateMod, $accessoryMod,
         );
 
-        $resalePrice = $this->calculator->calculateResalePrice($suggestedPrice, $resaleMargin);
+        $resalePrice = floor($stats['median'] / 100) * 100;
 
         return response()->json([
             'market_average' => round($stats['average'], 2),
@@ -97,7 +97,6 @@ class ApiEvaluatorController extends Controller
             'price_max' => round($stats['max'], 2),
             'suggested_price' => $suggestedPrice,
             'resale_price' => $resalePrice,
-            'resale_margin' => $resaleMargin,
             'listings_count' => $listingsCount,
             'low_data_warning' => $listingsCount < config('dgifipe.min_listings_warning'),
             'confidence' => $this->calculateConfidence($listingsCount, $stats['std_dev'], $stats['average']),
