@@ -58,10 +58,13 @@
             @php
                 $batteryRules = $settings->getBatteryRules();
                 $batteryLabels = [
-                    0 => ['label' => 'Excelente (≥ 90%)', 'field' => 'battery_excellent', 'class' => 'text-green-600'],
-                    1 => ['label' => 'Bom (80–89%)', 'field' => 'battery_good', 'class' => 'text-yellow-600'],
-                    2 => ['label' => 'Regular (70–79%)', 'field' => 'battery_regular', 'class' => 'text-orange-600'],
-                    3 => ['label' => 'Ruim (< 70%)', 'field' => 'battery_bad', 'class' => 'text-red-600'],
+                    0 => ['label' => 'Excelente (95–100%)', 'field' => 'battery_excellent', 'class' => 'text-green-600'],
+                    1 => ['label' => 'Muito Bom (90–94%)', 'field' => 'battery_very_good', 'class' => 'text-green-500'],
+                    2 => ['label' => 'Bom (85–89%)', 'field' => 'battery_good', 'class' => 'text-yellow-600'],
+                    3 => ['label' => 'Razoável (80–84%)', 'field' => 'battery_fair', 'class' => 'text-yellow-500'],
+                    4 => ['label' => 'Regular (75–79%)', 'field' => 'battery_regular', 'class' => 'text-orange-500'],
+                    5 => ['label' => 'Fraco (70–74%)', 'field' => 'battery_weak', 'class' => 'text-orange-600'],
+                    6 => ['label' => 'Ruim (< 70%)', 'field' => 'battery_bad', 'class' => 'text-red-600'],
                 ];
             @endphp
 
