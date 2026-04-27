@@ -8,6 +8,8 @@ return [
         'Santa Fé do Sul',
     ],
 
+    'evaluator_sources' => ['facebook'],
+
     'listing_lookback_days' => 7,
 
     'min_listings_warning' => 5,

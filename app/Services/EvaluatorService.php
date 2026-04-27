@@ -24,7 +24,7 @@ class EvaluatorService
         $cities = config('dgifipe.cities');
         $lookbackDays = config('dgifipe.listing_lookback_days');
 
-        $cacheKey = "listings:{$model}:{$storage}";
+        $cacheKey = "listings:{$model}:{$storage}:fb";
         $cacheTtl = $this->secondsUntilNextScrape();
 
         $listingData = Cache::remember($cacheKey, $cacheTtl, fn () => $this->fetchListingData($model, $storage, $cities, $lookbackDays));
@@ -111,6 +111,7 @@ class EvaluatorService
         $query = MarketListing::excludeSealed()
             ->forModel($model, $storage)
             ->inCities($cities)
+            ->fromSources(config('dgifipe.evaluator_sources'))
             ->recent($lookbackDays);
 
         $lastCollectedAt = (clone $query)->max('collected_at');

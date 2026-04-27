@@ -37,6 +37,11 @@ class MarketListing extends Model
         return $query->where('model', $model)->where('storage', $storage);
     }
 
+    public function scopeFromSources($query, array $sources)
+    {
+        return $query->whereIn('source', $sources);
+    }
+
     public function scopeInCities($query, array $cities)
     {
         return $query->whereIn('city', $cities);

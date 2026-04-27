@@ -112,7 +112,7 @@ class ApiEvaluatorController extends Controller
 
     private function getCachedListingData(string $model, string $storage): array
     {
-        $cacheKey = "api:listings:{$model}:{$storage}";
+        $cacheKey = "api:listings:{$model}:{$storage}:fb";
         $cacheTtl = $this->secondsUntilNextScrape();
 
         return Cache::remember($cacheKey, $cacheTtl, function () use ($model, $storage) {
@@ -122,6 +122,7 @@ class ApiEvaluatorController extends Controller
             $query = MarketListing::excludeSealed()
                 ->forModel($model, $storage)
                 ->inCities($cities)
+                ->fromSources(config('dgifipe.evaluator_sources'))
                 ->recent($lookbackDays);
 
             $lastCollectedAt = (clone $query)->max('collected_at');
