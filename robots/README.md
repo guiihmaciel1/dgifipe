@@ -14,13 +14,11 @@ playwright install chromium
 
 ## Configuração
 
-Copie o `.env.example` para `.env` e configure:
+Copie o `.env.example` para `.env` e preencha as credenciais do banco:
 
 ```bash
 cp .env.example .env
 ```
-
-Preencha `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` para receber alertas.
 
 ## Execução Manual
 
@@ -35,13 +33,10 @@ python main.py
 0 3 * * * cd /root/dgifipe/robots && /root/dgifipe/robots/venv/bin/python main.py >> /var/log/dgifipe/robot.log 2>&1
 ```
 
-## Fontes
+## Fonte
 
 - **Facebook Marketplace**: Busca por modelo + storage na região
-- **OLX**: Busca por modelo + storage em SP interior
 
 ## Logging
 
-- Logs sumarizados (total de anúncios, erros, tempo)
-- Alertas via Telegram no início e fim da coleta
-- Erros críticos notificados via Telegram
+- Logs sumarizados no console (total de anúncios, erros, tempo)

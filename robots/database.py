@@ -4,7 +4,6 @@ from mysql.connector import Error
 from datetime import date
 from config import DB_CONFIG
 from listing_filter import should_skip
-from opportunity_detector import check_opportunity
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +12,30 @@ def get_connection():
     return mysql.connector.connect(**DB_CONFIG)
 
 
+def _collected_at(listing: dict) -> str:
+    return listing.get('collected_at', date.today().isoformat())
+
+
+def _existing_keys(cursor, listings: list[dict]) -> set[tuple[str, str]]:
+    """Return (url, collected_at) pairs from the batch already stored."""
+    urls = list({l['url'] for l in listings if l.get('url')})
+    if not urls:
+        return set()
+
+    placeholders = ','.join(['%s'] * len(urls))
+    cursor.execute(
+        f"SELECT url, collected_at FROM market_listings WHERE url IN ({placeholders})",
+        urls,
+    )
+    return {(url, str(collected_at)) for url, collected_at in cursor.fetchall()}
+
+
 def insert_listings(listings: list[dict]) -> int:
     """
     Insert listings into the market_listings table.
-    Skips sealed devices and listings whose title contradicts the
-    searched model/storage. Returns the number of inserted rows.
+    Skips sealed devices, listings whose title contradicts the
+    searched model/storage and URLs already collected on the same day.
+    Returns the number of inserted rows.
     """
     if not listings:
         return 0
@@ -35,8 +53,15 @@ def insert_listings(listings: list[dict]) -> int:
                 (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
         """
 
+        seen = _existing_keys(cursor, listings)
+
         for listing in listings:
             if should_skip(listing):
+                continue
+
+            url = listing.get('url', '')
+            key = (url, _collected_at(listing))
+            if url and key in seen:
                 continue
 
             try:
@@ -47,11 +72,11 @@ def insert_listings(listings: list[dict]) -> int:
                     listing['city'],
                     listing['source'],
                     listing.get('title', ''),
-                    listing.get('url', ''),
-                    listing.get('collected_at', date.today().isoformat()),
+                    url,
+                    _collected_at(listing),
                 ))
                 inserted += 1
-                check_opportunity(listing)
+                seen.add(key)
             except Error as row_err:
                 logger.warning(
                     "Insert failed for %s %s (%s): %s",

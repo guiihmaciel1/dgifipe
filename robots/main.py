@@ -2,10 +2,9 @@
 """
 DG iFipe Robot
 Marketplace scraper. Runs daily via cron to collect iPhone listings
-from Facebook Marketplace and OLX. Communicates with Laravel via shared MySQL database.
+from Facebook Marketplace. Communicates with Laravel via shared MySQL database.
 """
 
-import argparse
 import logging
 import time
 import traceback
@@ -22,8 +21,6 @@ logging.basicConfig(
 from config import MODELS, CITIES, HEADLESS, USER_AGENT
 from database import insert_listings, cleanup_old_listings
 from scraper_facebook import scrape_facebook
-from scraper_olx import scrape_olx
-from telegram_logger import notify_start, notify_finish, notify_error
 
 
 def create_browser_page(playwright):
@@ -50,42 +47,12 @@ def run_facebook(page, model, storage, city):
         return 0, str(e)
 
 
-def run_olx(page, model, storage, city):
-    """Run OLX scraper and insert results. Returns (count, error)."""
-    try:
-        listings = scrape_olx(page, model, storage, city)
-        if listings:
-            count = insert_listings(listings)
-            return count, None
-        return 0, None
-    except Exception as e:
-        return 0, str(e)
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='DG iFipe Robot')
-    parser.add_argument('--facebook', action='store_true', help='Scrape only Facebook')
-    parser.add_argument('--olx', action='store_true', help='Scrape only OLX')
-    return parser.parse_args()
-
-
 def main():
-    args = parse_args()
-    use_facebook = args.facebook or not (args.facebook or args.olx)
-    use_olx = args.olx or not (args.facebook or args.olx)
-
     start_time = time.time()
     total_ads = 0
     total_errors = 0
 
-    sources = []
-    if use_facebook:
-        sources.append('Facebook')
-    if use_olx:
-        sources.append('OLX')
-
-    print(f"[{datetime.now()}] Robot starting... Sources: {', '.join(sources)}")
-    notify_start()
+    print(f"[{datetime.now()}] Robot starting... Source: Facebook")
 
     try:
         deleted = cleanup_old_listings(days=30)
@@ -102,49 +69,27 @@ def main():
                 for storage in storages:
                     for city in CITIES:
                         label = f"{model} {storage} - {city}"
-
-                        if use_facebook:
-                            count, err = run_facebook(page, model, storage, city)
-                            if err:
-                                total_errors += 1
-                                print(f"  FB ERROR: {label} -> {err}")
-                            elif count > 0:
-                                total_ads += count
-                                print(f"  FB: {label} -> {count} ads")
-
-                        if use_olx:
-                            count, err = run_olx(page, model, storage, city)
-                            if err:
-                                total_errors += 1
-                                print(f"  OLX ERROR: {label} -> {err}")
-                            elif count > 0:
-                                total_ads += count
-                                print(f"  OLX: {label} -> {count} ads")
+                        count, err = run_facebook(page, model, storage, city)
+                        if err:
+                            total_errors += 1
+                            print(f"  FB ERROR: {label} -> {err}")
+                        elif count > 0:
+                            total_ads += count
+                            print(f"  FB: {label} -> {count} ads")
 
         finally:
             browser.close()
 
     elapsed = time.time() - start_time
-    summary = (
+    print(
         f"[{datetime.now()}] Robot finished. "
         f"Ads: {total_ads}, Errors: {total_errors}, Time: {elapsed:.0f}s"
     )
-    print(summary)
-
-    try:
-        notify_finish(total_ads, total_errors, elapsed)
-    except Exception as e:
-        print(f"  Telegram notification error: {e}")
 
 
 if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        error_msg = f"{type(e).__name__}: {str(e)[:200]}"
-        print(f"FATAL ERROR: {error_msg}")
+        print(f"FATAL ERROR: {type(e).__name__}: {str(e)[:200]}")
         print(traceback.format_exc())
-        try:
-            notify_error(error_msg)
-        except Exception:
-            pass
